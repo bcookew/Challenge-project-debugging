@@ -58,7 +58,7 @@ if (useTestData)
 while (transactions > 0)
 {
     transactions -= 1;
-    int itemCost = valueGenerator.Next(2, 50);
+    int itemCost = valueGenerator.Next(2, 49);
 
     if (useTestData)
     {
@@ -115,50 +115,60 @@ static void LoadTillEachMorning(int[,] registerDailyStartingCash, int[] cashTill
 
 static void MakeChange(int cost, int[] cashTill, int twenties, int tens = 0, int fives = 0, int ones = 0)
 {
-    cashTill[3] += twenties;
-    cashTill[2] += tens;
-    cashTill[1] += fives;
-    cashTill[0] += ones;
 
     int amountPaid = twenties * 20 + tens * 10 + fives * 5 + ones;
     int changeNeeded = amountPaid - cost;
 
     if (changeNeeded < 0)
         throw new InvalidOperationException("InvalidOperationException: Not enough money provided to complete the transaction.");
+    
+    int[] previousTillState = { cashTill[0], cashTill[1], cashTill[2], cashTill[3] };
 
-    Console.WriteLine("Cashier prepares the following change:");
+    cashTill[3] += twenties;
+    cashTill[2] += tens;
+    cashTill[1] += fives;
+    cashTill[0] += ones;
+
+    string changeMessage = "Cashier prepares the following change:";
 
     while ((changeNeeded > 19) && (cashTill[3] > 0))
     {
         cashTill[3]--;
         changeNeeded -= 20;
-        Console.WriteLine("\t A twenty");
+        changeMessage += "\n\t A twenty";
     }
 
     while ((changeNeeded > 9) && (cashTill[2] > 0))
     {
         cashTill[2]--;
         changeNeeded -= 10;
-        Console.WriteLine("\t A ten");
+        changeMessage += "\n\t A ten";
     }
 
     while ((changeNeeded > 4) && (cashTill[1] > 0))
     {
         cashTill[1]--;
         changeNeeded -= 5;
-        Console.WriteLine("\t A five");
+        changeMessage += "\n\t A five";
     }
 
     while ((changeNeeded > 0) && (cashTill[0] > 0))
     {
         cashTill[0]--;
         changeNeeded -= 1;
-        Console.WriteLine("\t A one");
+        changeMessage += "\n\t A one";
     }
 
     if (changeNeeded > 0)
+    {
+        cashTill[3] = previousTillState[3];
+        cashTill[2] = previousTillState[2];
+        cashTill[1] = previousTillState[1];
+        cashTill[0] = previousTillState[0];
         throw new InvalidOperationException("InvalidOperationException: The till is unable to make change for the cash provided.");
+    }
 
+    Console.WriteLine(changeMessage);
 }
 
 static void LogTillStatus(int[] cashTill)
@@ -174,5 +184,4 @@ static void LogTillStatus(int[] cashTill)
 static string TillAmountSummary(int[] cashTill)
 {
     return $"The till has {cashTill[3] * 20 + cashTill[2] * 10 + cashTill[1] * 5 + cashTill[0]} dollars";
-
 }
